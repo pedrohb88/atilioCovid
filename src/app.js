@@ -31,7 +31,7 @@ function setDataPointsObj(dataPointsObj, type, data) {
 }
 
 function setupResultDataPoints(specificDataPointsObject, type, results) {
-	Object.keys(specificDataPointsObject).forEach(key => {
+	Object.keys(specificDataPointsObject).forEach((key) => {
 		let val = specificDataPointsObject[key];
 
 		results[type].dataPoints.push({
@@ -67,7 +67,7 @@ function readDataFromServer() {
 				suspeitos: { count: 0, dataPoints: [] },
 				descartados: { count: 0, dataPoints: [] },
 				notificados: { count: 0, dataPoints: [] },
-				ativos: {count: 0, dataPoints: []}
+				ativos: { count: 0, dataPoints: [] },
 			};
 
 			let parsedReadStream = readStream.pipe(csv({ separator: ";" }));
@@ -79,7 +79,7 @@ function readDataFromServer() {
 				suspeitos: {},
 				descartados: {},
 				notificados: {},
-				ativos: {}
+				ativos: {},
 			};
 
 			parsedReadStream.on("data", (data) => {
@@ -114,7 +114,10 @@ function readDataFromServer() {
 						results.notificados.count++;
 					}
 
-					if(data.StatusNotificacao === 'Em Aberto' && data.Classificacao == 'Confirmados'){
+					if (
+						data.StatusNotificacao === "Em Aberto" &&
+						data.Classificacao == "Confirmados"
+					) {
 						setDataPointsObj(dataPointsObj, "ativos", data);
 						results.ativos.count++;
 					}
@@ -127,7 +130,6 @@ function readDataFromServer() {
 						results.obitos.count++;
 						setDataPointsObj(dataPointsObj, "obitos", data);
 					}
-
 				}
 			});
 
@@ -224,57 +226,57 @@ function isDataUpdated() {
 }
 
 const extendTimeoutMiddleware = (req, res, next) => {
-	const space = ' ';
+	const space = " ";
 	let isFinished = false;
 	let isDataSent = false;
-  
+
 	// Only extend the timeout for API requests
-	if (!req.url.includes('/data')) {
-	  next();
-	  return;
+	if (!req.url.includes("/data")) {
+		next();
+		return;
 	}
-  
-	res.once('finish', () => {
-	  isFinished = true;
+
+	res.once("finish", () => {
+		isFinished = true;
 	});
-  
-	res.once('end', () => {
-	  isFinished = true;
+
+	res.once("end", () => {
+		isFinished = true;
 	});
-  
-	res.once('close', () => {
-	  isFinished = true;
+
+	res.once("close", () => {
+		isFinished = true;
 	});
-  
-	res.on('data', (data) => {
-	  // Look for something other than our blank space to indicate that real
-	  // data is now being sent back to the client.
-	  if (data !== space) {
-		isDataSent = true;
-	  }
-	});
-  
-	const waitAndSend = () => {
-	  setTimeout(() => {
-		// If the response hasn't finished and hasn't sent any data back....
-		if (!isFinished && !isDataSent) {
-		  // Need to write the status code/headers if they haven't been sent yet.
-		  if (!res.headersSent) {
-			res.writeHead(202);
-		  }
-  
-		  res.write(space);
-  
-		  // Wait another 15 seconds
-		  waitAndSend();
+
+	res.on("data", (data) => {
+		// Look for something other than our blank space to indicate that real
+		// data is now being sent back to the client.
+		if (data !== space) {
+			isDataSent = true;
 		}
-	  }, 15000);
+	});
+
+	const waitAndSend = () => {
+		setTimeout(() => {
+			// If the response hasn't finished and hasn't sent any data back....
+			if (!isFinished && !isDataSent) {
+				// Need to write the status code/headers if they haven't been sent yet.
+				if (!res.headersSent) {
+					res.writeHead(202);
+				}
+
+				res.write(space);
+
+				// Wait another 15 seconds
+				waitAndSend();
+			}
+		}, 15000);
 	};
-  
+
 	waitAndSend();
 	next();
-  };
-  
+};
+
 app.use(extendTimeoutMiddleware);
 
 app.get("/data", async (req, res) => {
@@ -283,26 +285,32 @@ app.get("/data", async (req, res) => {
 		return res.json(data);
 	}
 
-	await fetchDataAndWriteToServer();
-	const result = await readDataFromServer();
+	try {
+		await fetchDataAndWriteToServer();
+		const result = await readDataFromServer();
 
-	result.lastUpdateDate = moment().tz("America/Sao_Paulo");
+		result.lastUpdateDate = moment().tz("America/Sao_Paulo");
 
-	res.json(result);
+		res.json(result);
 
-	fs.writeFile(jsonDataFilePath, JSON.stringify(result), (err) => {
-		if (err) console.log("error writing data file ", err);
-	});
+		fs.writeFile(jsonDataFilePath, JSON.stringify(result), (err) => {
+			if (err) console.log("error writing data file ", err);
+		});
+	} catch (error) {
+		console.log(error);
+	}
 });
 
 // Server static assets in produdction
-if(process.env.NODE_ENV === 'production'){
-    // Set static folder
-    app.use(express.static('client/build'));
+if (process.env.NODE_ENV === "production") {
+	// Set static folder
+	app.use(express.static("client/build"));
 
-    app.get('*', (req, res) => {
-        res.sendFile(path.resolve(__dirname, '..', 'client', 'build', 'index.html'));
-    });
+	app.get("*", (req, res) => {
+		res.sendFile(
+			path.resolve(__dirname, "..", "client", "build", "index.html")
+		);
+	});
 }
 
 module.exports = app;
