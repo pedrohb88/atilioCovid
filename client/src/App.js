@@ -4,6 +4,7 @@ import axios from "axios";
 import ChartPanel from "./ChartPanel";
 
 import { parseInt } from "lodash";
+import Loader from './Loader';
 import MainPanel from "./MainPanel";
 
 const initialData = {
@@ -45,7 +46,7 @@ function App() {
 	}, []);
 
   return loading 
-  ? <h1>Carregando</h1> 
+  ? <Loader /> 
   : <div className="app">
       <div className="header">
         <h1>Boletim Covid-19 de Atílio Vivácqua</h1>

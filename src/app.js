@@ -223,9 +223,15 @@ function isDataUpdated() {
 	return true;
 }
 
-app.get("/", (req, res) => {
-	res.json({ msg: "hello" });
-});
+// Server static assets in produdction
+if(process.env.NODE_ENV === 'production'){
+    // Set static folder
+    app.use(express.static('client/build'));
+
+    app.get('*', (req, res) => {
+        res.sendfile(path.resolve(__dirname, 'client', 'build', 'index.html'));
+    });
+}
 
 app.get("/data", async (req, res) => {
 	if (isDataUpdated()) {
