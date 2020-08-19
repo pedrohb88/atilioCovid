@@ -223,16 +223,6 @@ function isDataUpdated() {
 	return true;
 }
 
-// Server static assets in produdction
-if(process.env.NODE_ENV === 'production'){
-    // Set static folder
-    app.use(express.static('client/build'));
-
-    app.get('*', (req, res) => {
-        res.sendFile(path.resolve(__dirname, '..', 'client', 'build', 'index.html'));
-    });
-}
-
 app.get("/data", async (req, res) => {
 	if (isDataUpdated()) {
 		const data = JSON.parse(fs.readFileSync(jsonDataFilePath).toString());
@@ -250,5 +240,15 @@ app.get("/data", async (req, res) => {
 		if (err) console.log("error writing data file ", err);
 	});
 });
+
+// Server static assets in produdction
+if(process.env.NODE_ENV === 'production'){
+    // Set static folder
+    app.use(express.static('client/build'));
+
+    app.get('*', (req, res) => {
+        res.sendFile(path.resolve(__dirname, '..', 'client', 'build', 'index.html'));
+    });
+}
 
 module.exports = app;
