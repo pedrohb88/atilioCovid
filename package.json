@@ -1,0 +1,39 @@
+{
+  "name": "covidatilio",
+  "version": "1.0.0",
+  "description": "Um simples sistema para mostrar informações básicas sobre os casos de covid na cidade de Atílio Vivácqua",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server",
+    "server": "nodemon server",
+    "client": "npm start --prefix client",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "test": "jest",
+    "heroku-postbuild": "NPM_CONFIG_PRODUCTION=false npm install --prefix client && npm run build --prefix client"
+  },
+  "nodemonConfig": {
+    "ignore": [
+      "dados.csv",
+      "data.json"
+    ]
+  },
+  "keywords": [
+    "covid",
+    "atilio",
+    "vivacqua"
+  ],
+  "author": "Pedro Leal",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^0.19.2",
+    "csv-parser": "^2.3.3",
+    "express": "^4.17.1",
+    "lodash": "^4.17.20",
+    "moment": "^2.27.0",
+    "moment-timezone": "^0.5.31",
+    "mongoose": "^5.10.0"
+  },
+  "devDependencies": {
+    "concurrently": "^5.3.0"
+  }
+}

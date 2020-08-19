@@ -1,0 +1,82 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans&display=swap');
+
+.app {
+    font-family: 'Open Sans', sans-serif;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 1em;
+    line-height: 2em;
+    color: white;
+    background-color: #222;
+}
+a{
+    text-decoration: none;
+    color: rgb(99, 126, 161);;
+    font-weight: bold;
+}
+.header{
+    max-width: 600px;
+}
+.header h1{
+    text-align: center;
+}
+.mainPanel {
+    display: flex;
+    width: 90%;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    margin-bottom: 3em;
+}
+.dataArea {
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-radius: 2em;
+    padding: 1em 2em;
+    min-width: 400px;
+    min-height: 130px;
+    width: 30%;
+    box-sizing: border-box;
+    margin-bottom: 3em;
+}
+.dataTitle{
+    font-size: 1.5em;
+}
+.dataCount {
+    font-size: 2.5em;
+}
+.chartPanel {
+    display: flex;
+    width: 90%;
+    flex-wrap: wrap;
+    justify-content: space-around;
+}
+.chart {
+    min-width: 500px;
+    box-sizing: border-box;
+    margin-bottom: 3em;
+    
+}
+
+@media (max-width: 500px) {
+    .chart {
+        min-width: 100%;
+    }
+}
+@media (max-width: 400px) {
+    .chart {
+        min-width: 100%;
+    }
+    .dataArea{
+        min-width: 100%;
+    }
+}
+
+@media (max-width: 600px) {
+    .header {
+        min-width: 100%;
+    }
+}
