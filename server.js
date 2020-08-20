@@ -5,11 +5,11 @@ const PORT = process.env.PORT || 5000;
 
 setupData();
 
-//1 hour interval
+//20 minutes interval
 setInterval(() => {
     console.log('start routine to fetch and write data');
     setupData();
-}, 1000 * 60 * 60);
+}, 1000 * 60 * 20);
 
 app.listen(PORT, () => {
     console.log(`Server up and running on port ${PORT}`);
