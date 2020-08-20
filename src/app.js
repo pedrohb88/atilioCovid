@@ -6,6 +6,8 @@ const _ = require("lodash");
 const moment = require("moment-timezone");
 const path = require("path");
 
+const httpDelayedResponse = require('http-delayed-response');
+
 const app = express();
 
 app.use(express.json());
@@ -55,6 +57,7 @@ function setupResultDataPoints(specificDataPointsObject, type, results) {
 
 function readDataFromServer() {
 	return new Promise((resolve, reject) => {
+		console.log('entrou no read');
 		const readStream = fs.createReadStream("dados.csv", { encoding: "binary" });
 
 		readStream.on("open", () => {
@@ -150,6 +153,7 @@ function readDataFromServer() {
 
 function fetchDataAndWriteToServer() {
 	return new Promise((resolve, reject) => {
+		console.log('entrou no write');
 		const writeStream = fs.createWriteStream("dados.csv");
 
 		console.log("Start gettin data from web and writing");
@@ -277,28 +281,57 @@ const extendTimeoutMiddleware = (req, res, next) => {
 	next();
 };
 
-app.use(extendTimeoutMiddleware);
+//app.use(extendTimeoutMiddleware);
+
+let result;
+function test(){
+	return new Promise( async (resolve, reject) => {
+		await fetchDataAndWriteToServer();
+		result = await readDataFromServer();
+		resolve();
+	});
+}
+
+app.use((req, res, next)  => {
+
+	// Only extend the timeout for API requests
+	if (!req.url.includes("/data")) {
+		next();
+		return;
+	}
+
+	if(isDataUpdated()){
+		next();
+		return;
+	}
+
+	var delayed = new httpDelayedResponse(req, res);
+	delayed.wait();
+	var promise = test();
+	// will eventually end when the promise is fulfilled
+	delayed.end(promise);
+
+	delayed.on('done', function(results) {
+		next();
+	});
+});
 
 app.get("/data", async (req, res) => {
-	if (isDataUpdated()) {
+
+	if (!result) {
 		const data = JSON.parse(fs.readFileSync(jsonDataFilePath).toString());
 		return res.json(data);
 	}
+	
+	result.lastUpdateDate = moment().tz("America/Sao_Paulo");
+	console.log('sending result to client');
+	res.json(result);
 
-	try {
-		await fetchDataAndWriteToServer();
-		const result = await readDataFromServer();
-
-		result.lastUpdateDate = moment().tz("America/Sao_Paulo");
-
-		res.json(result);
-
-		fs.writeFile(jsonDataFilePath, JSON.stringify(result), (err) => {
-			if (err) console.log("error writing data file ", err);
-		});
-	} catch (error) {
-		console.log(error);
-	}
+	console.log('writing result to json');
+	fs.writeFile(jsonDataFilePath, JSON.stringify(result), (err) => {
+		if (err) console.log("error writing data file ", err);
+	});
+	
 });
 
 // Server static assets in produdction
