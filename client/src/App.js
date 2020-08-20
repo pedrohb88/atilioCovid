@@ -4,7 +4,7 @@ import axios from "axios";
 import ChartPanel from "./ChartPanel";
 
 import { parseInt } from "lodash";
-import Loader from './Loader';
+import Loader from "./Loader";
 import MainPanel from "./MainPanel";
 
 const initialData = {
@@ -22,42 +22,72 @@ function App() {
 
 	useEffect(() => {
 		async function fetchData() {
-			const response = await axios.get("/data");
-			let data = response.data;
+			console.log("trying to fetch data");
 
-			Object.keys(data).forEach((type) => {
-				if (data[type].dataPoints) {
-					data[type].dataPoints = data[type].dataPoints.map((point) => {
-						let temp = point.x.split("-");
+			try {
+				const response = await axios.get("/data");
+				let data = response.data;
 
-						return {
-							x: new Date(temp[0], parseInt(temp[1]) - 1, temp[2]),
-							y: point.y,
-						};
-					});
-				}
-			});
+				Object.keys(data).forEach((type) => {
+					if (data[type].dataPoints) {
+						data[type].dataPoints = data[type].dataPoints.map((point) => {
+							let temp = point.x.split("-");
 
-			setData(data);
-			setLoading(false);
+							return {
+								x: new Date(temp[0], parseInt(temp[1]) - 1, temp[2]),
+								y: point.y,
+							};
+						});
+					}
+				});
+
+				setData(data);
+				setLoading(false);
+			} catch (error) {
+				console.log('request failed');
+				setTimeout(() => {
+					fetchData();
+				}, 3000);
+			}
 		}
 
 		fetchData();
 	}, []);
 
-  return loading 
-  ? <Loader /> 
-  : <div className="app">
-      <div className="header">
-        <h1>Boletim Covid-19 de Atílio Vivácqua</h1>
-        <p>
-          Essa simples aplicação tem como objetivo disponibilizar dados sobre a Covid-19 no município de Atílio Vivácqua de forma automatizada. Todos os dados são coletados diretamente do site do <a target="_blank" rel="noopener noreferrer" href="https://coronavirus.es.gov.br/painel-covid-19-es">Governo do Espírito Santo</a>.
-        </p>
-      </div>
-      <MainPanel data={data} />
-      <ChartPanel data={data} />
-      <footer>Desenvolvido por <a target="_blank" rel="noopener noreferrer" href="https://www.linkedin.com/in/leal-pedro/">Pedro Leal</a></footer>
-  </div>;
+	return loading ? (
+		<Loader />
+	) : (
+		<div className="app">
+			<div className="header">
+				<h1>Boletim Covid-19 de Atílio Vivácqua</h1>
+				<p>
+					Essa simples aplicação tem como objetivo disponibilizar dados sobre a
+					Covid-19 no município de Atílio Vivácqua de forma automatizada. Todos
+					os dados são coletados diretamente do site do{" "}
+					<a
+						target="_blank"
+						rel="noopener noreferrer"
+						href="https://coronavirus.es.gov.br/painel-covid-19-es"
+					>
+						Governo do Espírito Santo
+					</a>
+					.
+				</p>
+			</div>
+			<MainPanel data={data} />
+			<ChartPanel data={data} />
+			<footer>
+				Desenvolvido por{" "}
+				<a
+					target="_blank"
+					rel="noopener noreferrer"
+					href="https://www.linkedin.com/in/leal-pedro/"
+				>
+					Pedro Leal
+				</a>
+			</footer>
+		</div>
+	);
 }
 
 export default App;
