@@ -3,6 +3,7 @@ const fs = require("fs");
 const path = require("path");
 
 const {jsonDataFilePath, setupData} = require('./data');
+const Data = require('./models/Data');
 
 const app = express();
 
@@ -15,7 +16,9 @@ app.get("/data", async (req, res) => {
 	if(isLoadingData)
 		return res.status(400).json({msg: 'Data is updating'});
 
-	if(!fs.existsSync(jsonDataFilePath) && !isLoadingData){
+	let result = await Data.find({});
+
+	if((!result || !result.length) && !isLoadingData){
 		isLoadingData = true;
 		setupData().then(() => {
 			isLoadingData = false;
@@ -23,7 +26,7 @@ app.get("/data", async (req, res) => {
 		return res.status(400).json({msg: 'Data is updating'});
 	}
 
-	const data = JSON.parse(fs.readFileSync(jsonDataFilePath).toString());
+	const data = result[0];
 	return res.json(data);	
 });
 

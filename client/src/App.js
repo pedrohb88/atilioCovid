@@ -34,7 +34,7 @@ function App() {
 							let temp = point.x.split("-");
 
 							return {
-								x: new Date(temp[0], parseInt(temp[1]) - 1, temp[2]),
+								x: new Date(temp[0], parseInt(temp[1]) - 1, temp[2].split('T')[0]),
 								y: point.y,
 							};
 						});

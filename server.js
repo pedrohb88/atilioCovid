@@ -1,3 +1,8 @@
+require('dotenv').config();
+
+const connectDB = require('./src/db');
+connectDB();
+
 const app = require('./src/app');
 const {setupData} = require('./src/data');
 

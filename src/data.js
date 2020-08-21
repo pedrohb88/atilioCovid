@@ -5,6 +5,8 @@ const csv = require("csv-parser");
 const _ = require("lodash");
 const moment = require("moment-timezone");
 
+const Data = require("./models/Data");
+
 const jsonDataFilePath = path.join(__dirname, "..", "data.json");
 
 function getCaseDate(caseObj) {
@@ -166,10 +168,12 @@ function fetchDataAndWriteToServer() {
 	});
 }
 
-function isDataUpdated() {
+async function isDataUpdated() {
 	//if there is a data file, check for last update date
-	if (fs.existsSync(jsonDataFilePath)) {
-		let data = JSON.parse(fs.readFileSync(jsonDataFilePath).toString());
+
+	let result = await Data.find({});
+	if (result && result.length) {
+		let data = result[0];
 
 		if (!data.lastUpdateDate) return false;
 
@@ -212,19 +216,18 @@ function isDataUpdated() {
 				return false;
 			}
 		}
-		//if there's not a data file, should update
 	} else {
-		console.log("no data file, should update");
+		console.log("no data on DB, should update");
 		return false;
 	}
 
-	console.log("no need to update data");
+	console.log('no need to update data');
 	return true;
 }
 
 function setupData() {
-	return new Promise((resolve, reject) => {
-		if (isDataUpdated()) return;
+	return new Promise( async (resolve, reject) => {
+		if (await isDataUpdated()) return;
 
 		fetchDataAndWriteToServer()
 			.then(() => {
@@ -233,12 +236,13 @@ function setupData() {
 			.then((result) => {
 				result.lastUpdateDate = moment().tz("America/Sao_Paulo");
 
-				console.log("writing result to json");
-				fs.writeFile(jsonDataFilePath, JSON.stringify(result), (err) => {
-					if (err) return console.log("error writing data file ", err);
-
-					console.log("finish writing result to json");
-					resolve();
+				console.log("saving result on DB");
+				Data.deleteMany({}).then(() => {
+					let data = new Data(result);
+					data.save().then(() => {
+						console.log('finish saving result on DB');
+						resolve();
+					});
 				});
 			});
 	});
