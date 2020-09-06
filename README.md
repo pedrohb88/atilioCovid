@@ -33,7 +33,7 @@ npm run test
 👤 **Pedro Leal**
 
 * Github: [@pedrohb88](https://github.com/pedrohb88)
-* LinkedIn: [@leal.pedro](https://linkedin.com/in/leal.pedro)
+* LinkedIn: [@leal-pedro](https://linkedin.com/in/leal-pedro)
 
 ## Show your support
 
