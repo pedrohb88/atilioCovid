@@ -232,8 +232,8 @@ function setupData() {
 
 		fetchDataAndWriteToServer().then(() => {
 			return readDataFromServer();
-		});
-		readDataFromServer().then((result) => {
+		})
+		.then((result) => {
 			result.lastUpdateDate = moment().tz('America/Sao_Paulo');
 
 			console.log('saving result on DB');
