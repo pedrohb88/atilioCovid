@@ -28,6 +28,8 @@ function App() {
 				const response = await axios.get("/data");
 				let data = response.data;
 
+				console.log(data)
+
 				Object.keys(data).forEach((type) => {
 					if (data[type].dataPoints) {
 						data[type].dataPoints = data[type].dataPoints.map((point) => {
