@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	"encoding/csv"
 	"fmt"
@@ -21,8 +22,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"github.com/joho/godotenv"
-
-	"github.com/gocarina/gocsv"
 )
 
 type DataPoint struct {
@@ -318,29 +317,6 @@ Loop:
 
 	fmt.Printf("Download saved to ./%v \n", resp.Filename)
 
-	f, err := os.Open("./MICRODADOS.csv")
-	if err != nil {
-		log.Println("Error opening data file: ", err)
-		return
-	}
-	defer f.Close()
-
-	gocsv.SetCSVReader(func(in io.Reader) gocsv.CSVReader {
-		r := csv.NewReader(in)
-		r.LazyQuotes = true
-		r.Comma = ';'
-		r.FieldsPerRecord = -1
-		return r
-	})
-
-	log.Println("Reading data from data file")
-	cases := []*Case{}
-	err = gocsv.UnmarshalFile(f, &cases)
-	if err != nil {
-		log.Println("Error reading from data file: ", err)
-		return
-	}
-
 	now := time.Now().UTC()
 	data := &Data{
 		Ativos:         &DataComponent{Count: 0, DataPoints: []DataPoint{}},
@@ -353,34 +329,113 @@ Loop:
 		LastUpdateDate: now,
 	}
 
-	for _, c := range cases {
+	f, err := os.Open("./MICRODADOS.csv")
+	if err != nil {
+		log.Println("Error opening data file: ", err)
+		return
+	}
+	defer f.Close()
+
+	reader := csv.NewReader(bufio.NewReader(f))
+	reader.Comma = ';'
+	reader.LazyQuotes = true
+	reader.FieldsPerRecord = -1
+
+	log.Println("Reading data from data file")
+	rowNumber := 0
+	for {
+		row, err := reader.Read()
+		if err == io.EOF {
+			break
+		} else if err != nil {
+			log.Println("error reading data file:", err)
+			return
+		}
+		rowNumber++
+		//skip header line
+		if rowNumber == 1 {
+			continue
+		}
+
+		if len(row) == 24 {
+			fmt.Println(rowNumber)
+			fmt.Println(row)
+		}
+		c := Case{
+			DataNotificacao:         row[0],
+			DataCadastro:            row[1],
+			DataDiagnostico:         row[2],
+			DataColeta_RT_PCR:       row[3],
+			DataColetaTesteRapido:   row[4],
+			DataColetaSorologia:     row[5],
+			DataColetaSorologiaIGG:  row[6],
+			DataEncerramento:        row[7],
+			DataObito:               row[8],
+			Classificacao:           row[9],
+			Evolucao:                row[10],
+			CriterioConfirmacao:     row[11],
+			StatusNotificacao:       row[12],
+			Municipio:               row[13],
+			Bairro:                  row[14],
+			FaixaEtaria:             row[15],
+			IdadeNaDataNotificacao:  row[16],
+			Sexo:                    row[17],
+			RacaCor:                 row[18],
+			Escolaridade:            row[19],
+			Gestante:                row[20],
+			Febre:                   row[21],
+			DificuldadeRespiratoria: row[22],
+			Tosse:                   row[23],
+			Coriza:                  row[24],
+			DorGarganta:             row[25],
+			Diarreia:                row[26],
+			Cefaleia:                row[27],
+			ComorbidadePulmao:       row[28],
+			ComorbidadeCardio:       row[29],
+			ComorbidadeRenal:        row[30],
+			ComorbidadeDiabetes:     row[31],
+			ComorbidadeTabagismo:    row[32],
+			ComorbidadeObesidade:    row[33],
+			FicouInternado:          row[34],
+			ViagemBrasil:            row[35],
+			ViagemInternacional:     row[36],
+			ProfissionalSaude:       row[37],
+			PossuiDeficiencia:       row[38],
+			MoradorDeRua:            row[39],
+			ResultadoRT_PCR:         row[40],
+			ResultadoTesteRapido:    row[41],
+			ResultadoSorologia:      row[42],
+			ResultadoSorologia_IGG:  row[43],
+			TipoTesteRapido:         row[44],
+		}
+
 		if c.Municipio == "ATILIO VIVACQUA" {
 			switch c.Classificacao {
 			case "Confirmados":
 				data.Confirmados.Count++
 				data.Confirmados.DataPoints = append(data.Confirmados.DataPoints, DataPoint{
-					X: getCaseDate(*c),
+					X: getCaseDate(c),
 					Y: 1,
 				})
 
 				if c.Evolucao == "Cura" {
 					data.Cura.Count++
 					data.Cura.DataPoints = append(data.Cura.DataPoints, DataPoint{
-						X: getCaseDate(*c),
+						X: getCaseDate(c),
 						Y: 1,
 					})
 				}
 			case "Suspeito":
 				data.Suspeitos.Count++
 				data.Suspeitos.DataPoints = append(data.Suspeitos.DataPoints, DataPoint{
-					X: getCaseDate(*c),
+					X: getCaseDate(c),
 					Y: 1,
 				})
 
 			case "Descartados":
 				data.Descartados.Count++
 				data.Descartados.DataPoints = append(data.Descartados.DataPoints, DataPoint{
-					X: getCaseDate(*c),
+					X: getCaseDate(c),
 					Y: 1,
 				})
 
@@ -391,7 +446,7 @@ Loop:
 			if c.DataNotificacao != "" {
 				data.Notificados.Count++
 				data.Notificados.DataPoints = append(data.Notificados.DataPoints, DataPoint{
-					X: getCaseDate(*c),
+					X: getCaseDate(c),
 					Y: 1,
 				})
 			}
@@ -399,7 +454,7 @@ Loop:
 			if c.StatusNotificacao == "Em Aberto" && c.Classificacao == "Confirmados" {
 				data.Ativos.Count++
 				data.Ativos.DataPoints = append(data.Ativos.DataPoints, DataPoint{
-					X: getCaseDate(*c),
+					X: getCaseDate(c),
 					Y: 1,
 				})
 			}
@@ -416,12 +471,14 @@ Loop:
 			if obitoCovid && c.StatusNotificacao == "Encerrado" && c.DataObito != "" {
 				data.Obitos.Count++
 				data.Obitos.DataPoints = append(data.Obitos.DataPoints, DataPoint{
-					X: getCaseDate(*c),
+					X: getCaseDate(c),
 					Y: 1,
 				})
 			}
 		}
 	}
+
+	log.Println("finish reading and processing data file")
 
 	sortData(data)
 
