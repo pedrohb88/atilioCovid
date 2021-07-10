@@ -473,9 +473,12 @@ var ctx context.Context
 
 func main() {
 
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
+	var err error
+	if os.Getenv("ENV") != "production" {
+		err = godotenv.Load()
+		if err != nil {
+			log.Fatal("Error loading .env file")
+		}
 	}
 
 	clientOptions := options.Client().ApplyURI(os.Getenv("MONGO_URI"))
