@@ -318,9 +318,6 @@ Loop:
 
 	fmt.Printf("Download saved to ./%v \n", resp.Filename)
 
-	updatingData = false
-	downloadRetry = false
-
 	f, err := os.Open("./MICRODADOS.csv")
 	if err != nil {
 		log.Println("Error opening data file: ", err)
@@ -445,6 +442,8 @@ Loop:
 	}
 
 	log.Println("data successfully updated")
+	updatingData = false
+	downloadRetry = false
 
 }
 
