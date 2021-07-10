@@ -104,7 +104,6 @@ func updateDataRoutine() {
 }
 
 func isDataUpdated() bool {
-	return false
 	data, err := getData()
 	if err != nil {
 		log.Println("error reading data from database on isDataUpdated verification", err)
