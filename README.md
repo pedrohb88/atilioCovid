@@ -13,19 +13,19 @@
 ## Install
 
 ```sh
-npm install
+npm install client
 ```
 
 ## Usage
 
+### Client
 ```sh
-npm run start
+npm start --prefix client
 ```
 
-## Run tests
-
+### Server
 ```sh
-npm run test
+go run server/main.go
 ```
 
 ## Author
