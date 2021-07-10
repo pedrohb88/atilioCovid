@@ -110,6 +110,10 @@ func isDataUpdated() bool {
 		return true
 	}
 
+	if data == nil {
+		return false
+	}
+
 	// 19:00 -03
 	hourToUpdate := 22
 
@@ -458,6 +462,10 @@ func getData() (*Data, error) {
 	var datas []Data
 	if err = cursor.All(ctx, &datas); err != nil {
 		return nil, err
+	}
+
+	if len(datas) == 0 {
+		return nil, nil
 	}
 
 	return &datas[0], nil
