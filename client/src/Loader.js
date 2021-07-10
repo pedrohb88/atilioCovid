@@ -1,7 +1,7 @@
 import React from "react";
 import "./Loader.css";
 
-const Loader = () => {
+const Loader = ({msg}) => {
 	return (
 		<div className="loaderContainer">
 			<div className="loader">
@@ -14,7 +14,7 @@ const Loader = () => {
 				<div className="ring"></div>
 				<div className="ring"></div>
 			</div>
-            <span className="loaderText">Carregando...</span>
+            <span className="loaderText">{msg}</span>
 		</div>
 	);
 };

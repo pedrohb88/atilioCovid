@@ -197,16 +197,6 @@ func sortData(data *Data) {
 		value := v.Field(i).Interface()
 		dataComponent := value.(*DataComponent)
 
-		/*dateMap := make(map[time.Time]int)
-		for _, dataPoint := range dataComponent.DataPoints {
-			_, ok := dateMap[dataPoint.X]
-			if !ok {
-				dateMap[dataPoint.X] = 1
-			} else {
-				dateMap[dataPoint.X] += 1
-			}
-		}*/
-
 		sort.Sort(byDate(dataComponent.DataPoints))
 
 		newDataPoints := make([]DataPoint, 0)

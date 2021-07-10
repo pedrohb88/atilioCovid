@@ -20,15 +20,16 @@ function App() {
 	const [data, setData] = useState(initialData);
 	const [loading, setLoading] = useState(true);
 
+	const [error, setError] = useState(false)
+
 	useEffect(() => {
 		async function fetchData() {
 			console.log("trying to fetch data");
 
 			try {
-				const response = await axios.get("/data");
-				let data = response.data;
 
-				console.log(data)
+				const response = await axios.get("/data");
+				let data = response.data.data;
 
 				Object.keys(data).forEach((type) => {
 					if (data[type].dataPoints) {
@@ -45,8 +46,17 @@ function App() {
 
 				setData(data);
 				setLoading(false);
+				setError(false)
 			} catch (error) {
-				console.log('request failed');
+
+				setError(true)
+
+				console.log('request failed')
+
+				if (error.response) {
+					console.log(error.response.data.error)
+				}
+
 				setTimeout(() => {
 					fetchData();
 				}, 3000);
@@ -56,40 +66,45 @@ function App() {
 		fetchData();
 	}, []);
 
-	return loading ? (
-		<Loader />
-	) : (
-		<div className="app">
-			<div className="header">
-				<h1>Boletim Covid-19 de Atílio Vivácqua</h1>
-				<p>
-					Essa simples aplicação tem como objetivo disponibilizar dados sobre a
-					Covid-19 no município de Atílio Vivácqua de forma automatizada. Todos
-					os dados são coletados diretamente do site do{" "}
+	if (loading && !error) {
+		return <Loader msg={"Carregando..."}/>
+	} else if(loading && error) {
+		return <Loader msg={"Desculpe, houve um erro ao carregar os dados. Vamos continuar tentando. Se o problema persistir, entre em contato com o desenvolvedor através do e-mail: pedrohb88@gmail.com"} />
+	} 
+	else {
+		return (
+			<div className="app">
+				<div className="header">
+					<h1>Boletim Covid-19 de Atílio Vivácqua</h1>
+					<p>
+						Essa simples aplicação tem como objetivo disponibilizar dados sobre a
+						Covid-19 no município de Atílio Vivácqua de forma automatizada. Todos
+						os dados são coletados diretamente do site do{" "}
+						<a
+							target="_blank"
+							rel="noopener noreferrer"
+							href="https://coronavirus.es.gov.br/painel-covid-19-es"
+						>
+							Governo do Espírito Santo
+						</a>
+						.
+					</p>
+				</div>
+				<MainPanel data={data} />
+				<ChartPanel data={data} />
+				<footer>
+					Desenvolvido por{" "}
 					<a
 						target="_blank"
 						rel="noopener noreferrer"
-						href="https://coronavirus.es.gov.br/painel-covid-19-es"
+						href="https://www.linkedin.com/in/leal-pedro/"
 					>
-						Governo do Espírito Santo
+						Pedro Leal
 					</a>
-					.
-				</p>
+				</footer>
 			</div>
-			<MainPanel data={data} />
-			<ChartPanel data={data} />
-			<footer>
-				Desenvolvido por{" "}
-				<a
-					target="_blank"
-					rel="noopener noreferrer"
-					href="https://www.linkedin.com/in/leal-pedro/"
-				>
-					Pedro Leal
-				</a>
-			</footer>
-		</div>
-	);
+		);
+	}
 }
 
 export default App;
